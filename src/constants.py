@@ -181,6 +181,15 @@ DEFAULT_CONFIG = {
             "peak_rank_act": True,
             "discord_rpc": True,
             "aggregate_rank_rr": True,
-            "server_id": False
+            "server_id": False,
+            "overlay_enabled": True
+        },
+        "overlay": {
+            "hotkey": "F9",
+            "transparency": 0.9,
+            "x": 100,
+            "y": 100,
+            "width": 600,
+            "height": 400
         }
     }
