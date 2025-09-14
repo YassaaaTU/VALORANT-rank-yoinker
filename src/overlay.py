@@ -29,11 +29,15 @@ from typing import Dict, List, Any, Optional
 class GameOverlay:
     """Native desktop overlay for VALORANT rank yoinker"""
     
-    def __init__(self, log_function, config):
+    def __init__(self, log_function, config, start_visible=None):
         self.log = log_function
         self.config = config
         self.root = None
-        self.is_visible = False
+        # Auto-show overlay if keyboard is not available, or if explicitly requested
+        if start_visible is None:
+            self.is_visible = not KEYBOARD_AVAILABLE  # Show by default if no hotkey support
+        else:
+            self.is_visible = start_visible
         self.overlay_data = {}
         self.hotkey = self.config.get_overlay_setting("hotkey")
         self.transparency = self.config.get_overlay_setting("transparency")
@@ -83,6 +87,10 @@ class GameOverlay:
                 self.log(f"Failed to set hotkey {self.hotkey}: {e}")
         else:
             self.log("Keyboard library not available - hotkey disabled")
+            if self.is_visible:
+                self.log("Overlay will be visible by default since hotkeys are disabled")
+            else:
+                self.log("WARNING: Overlay is hidden and no hotkey available - overlay will not be usable")
             
         return True
             
@@ -122,9 +130,13 @@ class GameOverlay:
         self.controls_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=(10, 0))
         
         # Toggle button
+        initial_button_text = ("Hide" if self.is_visible else "Show")
+        if KEYBOARD_AVAILABLE:
+            initial_button_text += f" ({self.hotkey})"
+        
         self.toggle_btn = tk.Button(
             self.controls_frame,
-            text=f"Hide ({self.hotkey})",
+            text=initial_button_text,
             command=self.toggle_visibility,
             bg='#333333',
             fg='#ffffff',
@@ -147,8 +159,14 @@ class GameOverlay:
         self.move_handle.bind("<B1-Motion>", self._do_move)
         self.move_handle.bind("<ButtonRelease-1>", self._stop_move)
         
-        # Initially hide the overlay
-        self.root.withdraw()
+        # Initially show/hide the overlay based on is_visible
+        if self.is_visible:
+            self.root.deiconify()  # Show the overlay 
+            self.root.attributes("-topmost", True)  # Ensure it's on top
+            self.log("Overlay shown on startup")
+        else:
+            self.root.withdraw()  # Hide the overlay
+            self.log("Overlay hidden on startup (use hotkey to show)")
         
         # Start the tkinter main loop
         self.root.mainloop()
@@ -216,6 +234,26 @@ class GameOverlay:
         except Exception as e:
             self.log(f"Failed to save overlay position: {e}")
     
+    def force_show(self):
+        """Force the overlay to be visible (useful for demos)"""
+        if not self.root:
+            return False
+            
+        try:
+            self.root.deiconify()
+            self.root.attributes("-topmost", True)
+            self.root.lift()
+            self.is_visible = True
+            # Update button text
+            if hasattr(self, 'toggle_btn'):
+                button_text = f"Hide ({self.hotkey})" if KEYBOARD_AVAILABLE else "Hide"
+                self.toggle_btn.config(text=button_text)
+            self.log("Overlay force shown")
+            return True
+        except Exception as e:
+            self.log(f"Failed to force show overlay: {e}")
+            return False
+    
     def toggle_visibility(self):
         """Toggle overlay visibility"""
         if not self.root:
@@ -224,11 +262,19 @@ class GameOverlay:
         if self.is_visible:
             self.root.withdraw()
             self.is_visible = False
+            # Update button text
+            if hasattr(self, 'toggle_btn'):
+                button_text = f"Show ({self.hotkey})" if KEYBOARD_AVAILABLE else "Show"
+                self.toggle_btn.config(text=button_text)
             self.log("Overlay hidden")
         else:
             self.root.deiconify()
             self.root.attributes("-topmost", True)  # Ensure it stays on top
             self.is_visible = True
+            # Update button text
+            if hasattr(self, 'toggle_btn'):
+                button_text = f"Hide ({self.hotkey})" if KEYBOARD_AVAILABLE else "Hide"
+                self.toggle_btn.config(text=button_text)
             self.log("Overlay shown")
             
     def update_data(self, game_state: str, players_data: Dict[str, Any], match_info: Optional[Dict] = None):

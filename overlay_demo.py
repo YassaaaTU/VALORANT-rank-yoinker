@@ -160,9 +160,9 @@ def run_demo():
             print("⚠️  keyboard library not available - hotkeys will be disabled")
             print()
         
-        # Create demo config and overlay
+        # Create demo config and overlay (start visible for demo)
         config = DemoConfig()
-        overlay = GameOverlay(demo_log, config)
+        overlay = GameOverlay(demo_log, config, start_visible=True)  # Force visible for demo
         
         print("🚀 Initializing overlay...")
         if not overlay.initialize():
@@ -170,11 +170,16 @@ def run_demo():
             return False
             
         print("✅ Overlay initialized successfully!")
+        print("📱 The overlay window should now be VISIBLE on your screen!")
+        print("   Look for a semi-transparent dark window titled 'VALORANT Overlay'")
         print()
         print("📊 Loading demo player data...")
         
         # Wait for overlay to fully initialize
-        time.sleep(1)
+        time.sleep(2)
+        
+        # Force overlay to be visible (for demo)
+        overlay.force_show()
         
         # Update with demo data
         demo_players = create_demo_player_data()
@@ -192,13 +197,17 @@ def run_demo():
         print()
         print("🎮 DEMO INSTRUCTIONS:")
         print("=" * 40)
+        print("• The overlay window should now be VISIBLE on your screen!")
+        print("• Look for a semi-transparent dark window with player data")
         if KEYBOARD_AVAILABLE:
             print(f"• Press {config.get_overlay_setting('hotkey')} to toggle overlay visibility")
+        else:
+            print("• Hotkeys disabled (keyboard library not available)")
         print("• Drag the '≡≡≡ DRAG ≡≡≡' handle to move the overlay")
         print("• Click 'Hide' button to hide overlay")
         print("• Press Ctrl+C here to exit demo")
         print()
-        print("The overlay shows:")
+        print("📊 The overlay shows:")
         print("• Player names and agents")
         print("• Current ranks and RR")
         print("• Player levels and stats")
@@ -208,6 +217,12 @@ def run_demo():
         print("   The overlay will display real player data from VALORANT")
         print("   when running with the main application.")
         print()
+        
+        if not KEYBOARD_AVAILABLE:
+            print("⚠️  NOTE: Keyboard library not available in this environment")
+            print("   In a normal desktop environment with 'pip install keyboard',")
+            print("   you would be able to use hotkeys to toggle the overlay.")
+            print()
         
         # Simulate some data updates
         def update_demo_data():
