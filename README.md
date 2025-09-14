@@ -26,6 +26,17 @@
 |Current Skin|Current Rank|Rank Rating|Peak Rank|Account Level|
 |:---:|:---:|:---:|:---:|:---:|
 |![Skin](assets/Skin.png)|![Rank](assets/Rank.png)|![Rating](assets/Rating.png)|![Peak](assets/PeakRank.png)|![Level](assets/Level.png)|
+
+## ✨ New: Desktop Overlay Feature
+
+VALORANT Rank Yoinker now includes a **native desktop overlay** that displays player information on top of your game!
+
+- **Always-on-top transparent window** perfect for windowed fullscreen mode
+- **Toggle with hotkey** (default: F9) to show/hide instantly  
+- **Drag and reposition** the overlay anywhere on your screen
+- **Real-time updates** with all the same data as the console app
+
+See [OVERLAY.md](OVERLAY.md) for detailed setup and usage instructions.
     
 
 ## Usage

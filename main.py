@@ -33,6 +33,7 @@ from src.stats import Stats
 from src.table import Table
 from src.websocket import Ws
 from src.os import get_os
+from src.overlay import GameOverlay
 
 from src.account_manager.account_manager import AccountManager
 from src.account_manager.account_config import AccountConfig
@@ -137,6 +138,20 @@ try:
         rpc = None
 
     Wss = Ws(Requests.lockfile, Requests, cfg, colors, hide_names, Server, rpc)
+    
+    # Initialize overlay if enabled
+    overlay = None
+    if cfg.get_feature_flag("overlay_enabled"):
+        try:
+            overlay = GameOverlay(log, cfg)
+            if overlay.initialize():
+                log("Game overlay initialized successfully")
+            else:
+                log("Game overlay initialization failed or no display available")
+                overlay = None
+        except Exception as e:
+            log(f"Failed to initialize overlay: {e}")
+            overlay = None
     # loop = asyncio.new_event_loop()
     # asyncio.set_event_loop(loop)
     # loop.run_forever()
@@ -996,6 +1011,18 @@ try:
 
                 table.set_caption(f"VALORANT rank yoinker v{version}")
                 Server.send_payload("heartbeat", heartbeat_data)
+                
+                # Update overlay if available
+                if overlay:
+                    try:
+                        overlay.update_data(game_state, heartbeat_data["players"], {
+                            "map": heartbeat_data.get("map", ""),
+                            "mode": gamemode,
+                            "server": server
+                        })
+                    except Exception as e:
+                        log(f"Failed to update overlay: {e}")
+                        
                 table.display()
                 firstPrint = False
 
@@ -1015,9 +1042,13 @@ try:
             pass
 except KeyboardInterrupt:
     # lame implementation of fast ctrl+c exit
+    if overlay:
+        overlay.cleanup()
     os._exit(0)
 except:
     log(traceback.format_exc())
+    if overlay:
+        overlay.cleanup()
     print(
         color(
             "The program has encountered an error. If the problem persists, please reach support"
