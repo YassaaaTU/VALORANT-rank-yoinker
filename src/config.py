@@ -62,7 +62,10 @@ class Config:
         return self.__dict__.get("flags",DEFAULT_CONFIG["flags"]).get(key,DEFAULT_CONFIG["flags"][key])
 
     def get_table_flag(self,key):
-        return self.__dict__.get("table",DEFAULT_CONFIG["flags"]).get(key,DEFAULT_CONFIG["table"][key])         
+        return self.__dict__.get("table",DEFAULT_CONFIG["flags"]).get(key,DEFAULT_CONFIG["table"][key])
+    
+    def get_overlay_setting(self, key):
+        return self.__dict__.get("overlay", DEFAULT_CONFIG["overlay"]).get(key, DEFAULT_CONFIG["overlay"][key])         
 
     def config_dialog(self, fileToWrite: TextIOWrapper):
         self.log("color config prompt called")
